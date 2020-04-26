@@ -13,10 +13,12 @@
  * main - Iterative TCP server for TIME service
  *------------------------------------------------------------------------
  */
+
 int main(int argc, char *argv[]) 
 /* argc: 命令行参数个数， 例如：C:\> TCPServer 8080 
                      argc=2 argv[0]="TCPServer",argv[1]="8080" */
 {
+	puts("Server Active"); 
 	struct	sockaddr_in fsin;	    /* the from address of a client	  */
 	SOCKET	msock, ssock;		    /* master & slave sockets	      */
 	WSADATA wsadata; 
@@ -27,7 +29,7 @@ int main(int argc, char *argv[])
 	time_t	now;			        /* current time			            */
 	int count=1; 
 	char	buf[10];
-	
+	char str[25],IP[100],port[100];
 	WSAStartup(WSVERS, &wsadata);						// 加载winsock library。WSVERS指明请求使用的版本。wsadata返回系统实际支持的最高版本
 		
 	msock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);	// 创建套接字，参数：因特网协议簇(family)，流套接字，TCP协议
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
 		
 		alen = sizeof(struct sockaddr);                         // 取到地址结构的长度
 		ssock = accept(msock, (struct sockaddr *)&fsin, &alen); // 如果在连接请求队列中有连接请求，则接受连接请求并建立连接，返回该连接的套接字，否则，本语句被阻塞直到队列非空。fsin包含客户端IP地址和端口号
-		
+		in_addr tmp=fsin.sin_addr; 
 
 //		int cc = send(ssock, message, strlen(message), 0);              
 // 第二个参数指向发送缓冲区，第三个参数为要发送的字节数，第四个参数一般置0，返回值：>=0 实际发送的字节数，0 对方正常关闭，SOCKET_ERROR 出错。
@@ -65,9 +67,26 @@ int main(int argc, char *argv[])
 		(void) time(&now);                                      // 取得系统时间
 		pts = ctime(&now);                                      // 把时间转换为字符串
 		cc = send(ssock, pts, strlen(pts), 0);   
-		printf("you sent the time: %s\n", pts);  
+		printf("you sent the time: %s", pts);  
 		cc = send(ssock, buf, strlen(buf), 0);   
 		printf("you echo the message: %s\n", buf);                               // 显示发送的字符串
+    	
+    	itoa(tmp.S_un.S_un_b.s_b1, str, 10);
+		strcpy(IP,str); 
+    	itoa(tmp.S_un.S_un_b.s_b2, str, 10);
+    	strcat(IP,"."); strcat(IP,str);
+    	itoa(tmp.S_un.S_un_b.s_b3, str, 10);
+    	strcat(IP,"."); strcat(IP,str);    	
+    	itoa(tmp.S_un.S_un_b.s_b4, str, 10);
+    	strcat(IP,"."); strcat(IP,str);
+    	cc = send(ssock, IP, strlen(IP), 0);
+		printf("the client IP is %s\n",IP); 
+		
+//		printf("$%d.%d.%d.%d\n",tmp.S_un.S_un_b.s_b1,tmp.S_un.S_un_b.s_b2,tmp.S_un.S_un_b.s_b3,tmp.S_un.S_un_b.s_b4); 
+		itoa(fsin.sin_port, port, 10);
+		cc = send(ssock, port, strlen(port), 0);
+		printf("the client port is %s\n",port); 
+		
 		
 		(void) closesocket(ssock);                              // 关闭连接套接字
 	}

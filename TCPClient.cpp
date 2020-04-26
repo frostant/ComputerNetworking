@@ -15,16 +15,16 @@
  */
 int main(int argc, char *argv[])
 {
+	puts("Client Active");
 	char	*host = "127.0.0.1";	    /* server IP to connect         */
 	char	*service = "50500";  	    /* server port to connect       */
 	struct sockaddr_in sin;	            /* an Internet endpoint address	*/
 	char	buf[BUFLEN+1];   		    /* buffer for one line of text	*/
 	SOCKET	sock;		  	            /* socket descriptor	    	*/
 	int	cc;			                    /* recv character count		    */
-	char message[10];
+	char message[20];
 	printf("please input the message:"); 
 		scanf("%s",message); 
-		puts(""); 
 		
 	WSADATA wsadata;
 	WSAStartup(WSVERS, &wsadata);						  //加载winsock library。WSVERS为请求的版本，wsadata返回系统实际支持的最高版本
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
          printf("Server closed!",buf);  
     }  else if(cc > 0) {
          buf[cc] = '\0';	                       // ensure null-termination
-         printf("you have receive time: %s\n",buf);                         // 显示所接收的字符串
+         printf("you have receive time: %s",buf);                         // 显示所接收的字符串
     }
     
 	cc = recv(sock, buf, BUFLEN, 0);                // 第二个参数指向缓冲区，第三个参数为缓冲区大小(字节数)，第四个参数一般设置为0，返回值:(>0)接收到的字节数,(=0)对方已关闭,(<0)连接出错
@@ -60,6 +60,26 @@ int main(int argc, char *argv[])
     }  else if(cc > 0) {
          buf[cc] = '\0';	                       // ensure null-termination
          printf("you have receive message: %s\n",buf);                         // 显示所接收的字符串
+    }
+    
+    cc = recv(sock, buf, BUFLEN, 0);                // 第二个参数指向缓冲区，第三个参数为缓冲区大小(字节数)，第四个参数一般设置为0，返回值:(>0)接收到的字节数,(=0)对方已关闭,(<0)连接出错
+    if(cc == SOCKET_ERROR)                          // 出错。其后必须关闭套接字sock
+         printf("Error: %d.\n",GetLastError());
+     else if(cc == 0) {                             // 对方正常关闭
+         printf("Server closed!",buf);  
+    }  else if(cc > 0) {
+         buf[cc] = '\0';	                       // ensure null-termination
+         printf("you have receive client IP: %s\n",buf);                         // 显示所接收的字符串
+    }
+    
+    cc = recv(sock, buf, BUFLEN, 0);                // 第二个参数指向缓冲区，第三个参数为缓冲区大小(字节数)，第四个参数一般设置为0，返回值:(>0)接收到的字节数,(=0)对方已关闭,(<0)连接出错
+    if(cc == SOCKET_ERROR)                          // 出错。其后必须关闭套接字sock
+         printf("Error: %d.\n",GetLastError());
+     else if(cc == 0) {                             // 对方正常关闭
+         printf("Server closed!",buf);  
+    }  else if(cc > 0) {
+         buf[cc] = '\0';	                       // ensure null-termination
+         printf("you have receive client port: %s\n",buf);                         // 显示所接收的字符串
     }
     
 	closesocket(sock);                             // 关闭监听套接字
