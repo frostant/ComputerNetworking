@@ -42,6 +42,7 @@ void *threadrecv(void *pno){
 	int psock = inform.sock_;
 	sockaddr_in ff = inform.fsin_; 
 	while(1){
+		strcpy(buf,"lyttest"); 
 		int cc = recv(psock, buf, 50, 0);
 		if(cc <= 0){    
 	        printf("Server closed!\n"); 
@@ -58,6 +59,7 @@ void *threadrecv(void *pno){
 					sprintf(inf,"IP: %s:%d time: %s",inet_ntoa(ff.sin_addr),ff.sin_port,pts);
 					send(ssock[i], inf, strlen(inf),0);
 					printf("the inf is: #%s\n", inf);
+					printf("$$%d, %s",i,buf); 
 				}
 			}
 	    } 
@@ -111,14 +113,14 @@ int main(int argc, char *argv[])
 			if(ssock[i]==NULL){
 				ssock[i] = accept(msock, (sockaddr *)&fsin, &alen);
 				printf("The %d chat interaction.\nENTER\n",count++);
-				(void) time(&now); strcpy(buf,"ENTER"); 
-				pts = ctime(&now);
-				sprintf(inf,"IP: %s:%d time: %s",inet_ntoa(fsin.sin_addr),fsin.sin_port,pts);
-				printf("the inf is: #%s\n", inf);
-				for(int i=0;i<30;i++) if(ssock[i]!=NULL){
-					send(ssock[i], buf, strlen(buf),0);
-					send(ssock[i], inf, strlen(inf),0);
-				}
+//				(void) time(&now); strcpy(buf,"ENTER"); 
+//				pts = ctime(&now);
+//				sprintf(inf,"IP: %s:%d time: %s",inet_ntoa(fsin.sin_addr),fsin.sin_port,pts);
+//				printf("the inf is: #%s\n", inf);
+//				for(int i=0;i<30;i++) if(ssock[i]!=NULL){
+//					send(ssock[i], buf, strlen(buf),0);
+//					send(ssock[i], inf, strlen(inf),0);
+//				}
 				idx=i; break;  
 			}
 			if(i==29) puts(" the socket is fully."); 
