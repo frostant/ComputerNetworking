@@ -16,10 +16,10 @@
  */
 int over=0; 
 unsigned __stdcall threaddisp(void *pno){
-	char buf[50],inf[100];
+	char buf[100],inf[100];
 	SOCKET psock = *((SOCKET *)pno);
 	while(1){
-		int cc = recv(psock, buf, 50, 0);
+		int cc = recv(psock, buf, 100, 0);
 		if(cc <= 0){                        // 出错。其后必须关闭套接字sock
 	        printf("Server closed!\n"); over=1; 
 			break;  
@@ -43,8 +43,9 @@ unsigned __stdcall threaddisp(void *pno){
 int main()
 {
 	puts("CLIENT");
+	char 	*host = "103.26.79.35"; 
 //	char 	*host = "127.0.0.1"; 
-	char	*host = "106.53.78.95";	    /* server IP to connect         */
+//	char	*host = "106.53.78.95";	    /* server IP to connect         */
 	char	*service = "50500";  	    /* server port to connect       */
 	struct sockaddr_in sin;	            /* an Internet endpoint address	*/
 	char	buf[BUFLEN+1];   		    /* buffer for one line of text	*/
@@ -69,7 +70,7 @@ int main()
 	
 	for(int i=1;i<=100000000;i++); //用于给线程延时 
 	while(!over){
-		printf("the message:"); 
+		printf("\rthe message:"); 
 		scanf("%s",msg);
 		if(!strcmp(msg,"#Q")) break;
 		cc=send(sock, msg, strlen(msg), 0);
