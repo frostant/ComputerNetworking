@@ -43,7 +43,7 @@ unsigned __stdcall threaddisp(void *pno){
 int main()
 {
 	puts("CLIENT");
-	char	*host = "127.0.0.1";	    /* server IP to connect         */
+	char	*host = "192.168.2.137";	    /* server IP to connect         */
 	char	*service = "50500";  	    /* server port to connect       */
 	struct sockaddr_in sin;	            /* an Internet endpoint address	*/
 	char	buf[BUFLEN+1];   		    /* buffer for one line of text	*/
