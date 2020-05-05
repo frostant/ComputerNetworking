@@ -4,27 +4,54 @@
 #include <stdio.h>
 #include <winsock2.h>
 #include <string.h>
-
+#include <windows.h>
+#include <process.h>
+#include <math.h>
 #define	BUFLEN		2000                  // 缓冲区大小
 #define WSVERS		MAKEWORD(2, 0)        // 指明版本2.0 
 #pragma comment(lib,"ws2_32.lib")         // 使用winsock 2.0 Llibrary
-
 /*------------------------------------------------------------------------
  * main - TCP client for TIME service
  *------------------------------------------------------------------------
  */
-int main(int argc, char *argv[])
+int over=0; 
+unsigned __stdcall threaddisp(void *pno){
+	char buf[50],inf[100];
+	SOCKET psock = *((SOCKET *)pno);
+	while(1){
+		int cc = recv(psock, buf, 50, 0);
+		if(cc <= 0){                        // 出错。其后必须关闭套接字sock
+	        printf("Server closed!\n"); over=1; 
+			break;  
+	    }  else {
+	        buf[cc] = '\0';	                       // ensure null-termination
+	        printf("\ryou have receive message: %s\n",buf);   // 显示所接收的字符串
+	    } 
+	    cc = recv(psock, inf, 100, 0);
+		if(cc <= 0){    
+	        printf("Server closed!\n"); over=1; 
+			break;  
+	    }  else {
+	        inf[cc] = '\0';	                       // ensure null-termination
+	        printf("From: %s\n",inf);   // IP and time 
+	    } 
+	    printf("the message:"); 
+	}
+	(void) closesocket(psock);
+}
+
+int main()
 {
+	puts("CLIENT");
+//	char	*host = "103.26.79.35";	    /* server IP to connect         */
+
 	char	*host = "127.0.0.1";	    /* server IP to connect         */
 	char	*service = "50500";  	    /* server port to connect       */
 	struct sockaddr_in sin;	            /* an Internet endpoint address	*/
 	char	buf[BUFLEN+1];   		    /* buffer for one line of text	*/
 	SOCKET	sock;		  	            /* socket descriptor	    	*/
 	int	cc;			                    /* recv character count		    */
-	char message[10];
-	printf("please input the message:"); 
-		scanf("%s",message); 
-		puts(""); 
+	char msg[10];
 		
 	WSADATA wsadata;
 	WSAStartup(WSVERS, &wsadata);						  //加载winsock library。WSVERS为请求的版本，wsadata返回系统实际支持的最高版本
@@ -38,35 +65,23 @@ int main(int argc, char *argv[])
     sin.sin_port = htons((u_short)atoi(service));         // 设置服务器端口号  
     int ret=connect(sock, (struct sockaddr *)&sin, sizeof(sin));  
 // 连接到服务器，第二个参数指向存放服务器地址的结构，第三个参数为该结构的大小，返回值为0时表示无错误发生，返回SOCKET_ERROR表示出错，应用程序可通过WSAGetLastError()获取相应错误代码。
+	HANDLE hThread; 
+	hThread=(HANDLE)_beginthreadex(NULL,0,&threaddisp, (void *)&sock, 0, NULL);
 	
-	cc=send(sock, message, strlen(message), 0);
-	
-	
-    cc = recv(sock, buf, BUFLEN, 0);                // 第二个参数指向缓冲区，第三个参数为缓冲区大小(字节数)，第四个参数一般设置为0，返回值:(>0)接收到的字节数,(=0)对方已关闭,(<0)连接出错
-    if(cc == SOCKET_ERROR)                          // 出错。其后必须关闭套接字sock
-         printf("Error: %d.\n",GetLastError());
-     else if(cc == 0) {                             // 对方正常关闭
-         printf("Server closed!");  
-    }  else if(cc > 0) {
-         buf[cc] = '\0';	                       // ensure null-termination
-         printf("you have receive time: %s\n",buf);                         // 显示所接收的字符串
-    }
-    
-	cc = recv(sock, buf, BUFLEN, 0);                // 第二个参数指向缓冲区，第三个参数为缓冲区大小(字节数)，第四个参数一般设置为0，返回值:(>0)接收到的字节数,(=0)对方已关闭,(<0)连接出错
-    if(cc == SOCKET_ERROR)                          // 出错。其后必须关闭套接字sock
-         printf("Error: %d.\n",GetLastError());
-     else if(cc == 0) {                             // 对方正常关闭
-         printf("Server closed!",buf);  
-    }  else if(cc > 0) {
-         buf[cc] = '\0';	                       // ensure null-termination
-         printf("you have receive message: %s\n",buf);                         // 显示所接收的字符串
-    }
+	for(int i=1;i<=100000000;i++); //用于给线程延时 
+	while(!over){
+		printf("the message:"); 
+		scanf("%s",msg);
+		if(!strcmp(msg,"#Q")) break;
+		cc=send(sock, msg, strlen(msg), 0);
+		
+	}
+	printf("you quit the connnect. "); 
     
 	closesocket(sock);                             // 关闭监听套接字
     WSACleanup();                                  // 卸载winsock library
 
     printf("按回车键继续...");
 	getchar();										// 等待任意按键
-	getchar();
 	return 0;  
 }
